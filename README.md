@@ -123,3 +123,18 @@ The device can be reset remotely through MQTT:
    ```
 
 **Note:** The flash LED indicator works for all types of resets, not just remote MQTT-triggered ones.
+
+## Docker OTA Server
+
+This project includes a `docker-compose.yml` file to run a simple OTA (Over-The-Air) update server.
+
+### Updating Server Content
+
+- The Docker container, when started using `docker-compose up`, clones or pulls the latest version of the `master` branch from the GitHub repository (`https://github.com/gilo2754/qr_esp32.git`).
+- **Important:** This update process only happens **when the container starts**.
+- If you push new changes to the GitHub repository while the container is already running, these changes **will not** be reflected automatically.
+- To make the server serve the latest code from GitHub, you must **restart the container** using the following command in the project directory:
+  ```bash
+  docker-compose restart qr-esp32-web
+  ```
+  This will trigger the entrypoint script again, causing it to pull the latest changes before starting the HTTP server.
