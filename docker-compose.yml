@@ -20,26 +20,26 @@ services:
       REPO_URL='https://github.com/gilo2754/qr_esp32.git' && \
       TARGET_DIR='/data' && \
       BRANCH_NAME='master' && \
-      echo \"--- Target Git Branch: [$BRANCH_NAME] ---\" && \
-      if [ -d \"$TARGET_DIR/.git\" ]; then \
-        echo \"--- Repository exists in $TARGET_DIR. Updating branch '$BRANCH_NAME'... ---\" && \
-        cd \"$TARGET_DIR\" && \
+      echo \"--- Target Git Branch: [\$BRANCH_NAME] ---\" && \
+      if [ -d \"\$TARGET_DIR/.git\" ]; then \
+        echo \"--- Repository exists in \$TARGET_DIR. Updating branch '\$BRANCH_NAME'... ---\" && \
+        cd \"\$TARGET_DIR\" && \
         git fetch origin && \
-        git checkout \"$BRANCH_NAME\" && \
-        git reset --hard \"origin/$BRANCH_NAME\" && \
+        git checkout \"\$BRANCH_NAME\" && \
+        git reset --hard \"origin/\$BRANCH_NAME\" && \
         git clean -fdx && \
-        git pull origin \"$BRANCH_NAME\"; \
+        git pull origin \"\$BRANCH_NAME\"; \
       else \
-        echo \"--- Repository does not exist in $TARGET_DIR. Cloning branch '$BRANCH_NAME'... ---\" && \
-        git clone --single-branch --branch \"$BRANCH_NAME\" \"$REPO_URL\" \"$TARGET_DIR\"; \
+        echo \"--- Repository does not exist in \$TARGET_DIR. Cloning branch '\$BRANCH_NAME'... ---\" && \
+        git clone --single-branch --branch \"\$BRANCH_NAME\" \"\$REPO_URL\" \"\$TARGET_DIR\"; \
       fi && \
-      APP_DIR=\"$TARGET_DIR/qr_esp32\" && \
-      if [ -d \"$APP_DIR\" ]; then \
-        echo \"--- Starting HTTP server in $APP_DIR directory ---\" && \
-        cd \"$APP_DIR\" && \
+      APP_DIR=\"\$TARGET_DIR/qr_esp32\" && \
+      if [ -d \"\$APP_DIR\" ]; then \
+        echo \"--- Starting HTTP server in \$APP_DIR directory ---\" && \
+        cd \"\$APP_DIR\" && \
         exec python3 -m http.server 80; \
       else \
-        echo \"ERROR: Directory '$APP_DIR' not found after git operations!\" && \
+        echo \"ERROR: Directory '\$APP_DIR' not found after git operations!\" && \
         exit 1; \
       fi \
       "
