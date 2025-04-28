@@ -21,7 +21,7 @@ else
   echo "--- Repository exists, updating ${TARGET_DIR} ---"
   # If it exists, navigate into it and pull changes
   cd "${TARGET_DIR}"
-  git pull origin main
+  git pull origin master
 fi
 
 # Ensure we are in the correct directory before starting server
