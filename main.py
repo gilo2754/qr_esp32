@@ -443,7 +443,7 @@ def main():
     MQTT_TOPIC_HEALTH = f"vending/machine/{MACHINE_ID}/health".encode('utf-8')
     # -------------------------------------------------------------
 
-    print(f'INFO: Starting *** UPDATED-OTA *** ESP32 Vending MQTT Client for Machine ID: {MACHINE_ID}')
+    print(f'INFO: Starting *** UPDATED-OTA-REMOTE *** ESP32 Vending MQTT Client for Machine ID: {MACHINE_ID}')
     
     last_health_check = time.time()
     indicate_reset()
