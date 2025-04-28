@@ -6,9 +6,9 @@ services:
     container_name: qr_esp32_ota_server
     volumes:
       - qr_data:/app
-      - ./entrypoint.sh:/app/entrypoint.sh
+      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     working_dir: /app
-    command: ["bash", "/app/entrypoint.sh"]
+    command: ["bash", "/usr/local/bin/entrypoint.sh"]
     ports:
       - "8000:8000"
     networks:
