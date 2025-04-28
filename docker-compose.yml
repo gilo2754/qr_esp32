@@ -2,12 +2,16 @@ version: '3.8'
 
 services:
   qr-esp32-web:
-    image: python:3.9-slim
+    # Build the image using the Dockerfile in the current directory
+    build: .
+    # image: python:3.9-slim # Remove or comment out this line
     container_name: qr_esp32_ota_server
     volumes:
       - qr_data:/app
-      - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
+      # Remove the volume mount for the script, it's copied in the Dockerfile
+      # - ./entrypoint.sh:/usr/local/bin/entrypoint.sh
     working_dir: /app
+    # Command remains the same, executes the script copied by the Dockerfile
     command: ["bash", "/usr/local/bin/entrypoint.sh"]
     ports:
       - "8000:8000"
