@@ -1,0 +1,50 @@
+version: '3'
+
+services:
+  ota-server:
+    image: python:3
+    container_name: ota-server
+    ports:
+      - "80:80"
+    volumes:
+      # Mount the data volume
+      - ota-data:/data
+    # Set initial working dir for the script
+    working_dir: /data
+    # Command to clone/update repo and start server
+    command: >
+      /bin/bash -c "
+      set -e && \
+      echo '--- Ensuring git is installed ---' && \
+      apt-get update > /dev/null && apt-get install -y git > /dev/null && \
+      REPO_URL='https://github.com/gilo2754/qr_esp32.git' && \
+      TARGET_DIR='/data' && \
+      BRANCH_NAME='master' && \
+      echo \"--- Target Git Branch: [\$BRANCH_NAME] ---\" && \
+      if [ -d \"\$TARGET_DIR/.git\" ]; then \
+        echo \"--- Repository exists in \$TARGET_DIR. Updating branch '\$BRANCH_NAME'... ---\" && \
+        cd \"\$TARGET_DIR\" && \
+        git fetch origin && \
+        git checkout \"\$BRANCH_NAME\" && \
+        git reset --hard \"origin/\$BRANCH_NAME\" && \
+        git clean -fdx && \
+        git pull origin \"\$BRANCH_NAME\"; \
+      else \
+        echo \"--- Repository does not exist in \$TARGET_DIR. Cloning branch '\$BRANCH_NAME'... ---\" && \
+        git clone --single-branch --branch \"\$BRANCH_NAME\" \"\$REPO_URL\" \"\$TARGET_DIR\"; \
+      fi && \
+      APP_DIR=\"\$TARGET_DIR/qr_esp32\" && \
+      if [ -d \"\$APP_DIR\" ]; then \
+        echo \"--- Starting HTTP server in \$APP_DIR directory ---\" && \
+        cd \"\$APP_DIR\" && \
+        exec python3 -m http.server 80; \
+      else \
+        echo \"ERROR: Directory '\$APP_DIR' not found after git operations!\" && \
+        exit 1; \
+      fi \
+      "
+    restart: unless-stopped
+
+volumes:
+  ota-data:
+    driver: local 
