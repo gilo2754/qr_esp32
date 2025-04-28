@@ -1,0 +1,66 @@
+version: '3'
+
+services:
+  ota-server:
+    image: python:3
+    container_name: ota-server
+    ports:
+      - "80:80"
+    volumes:
+      - ota-data:/data
+    working_dir: /data # Establecer como directorio de trabajo principal
+    environment:
+      # ¡ASEGÚRATE DE QUE ESTO ESTÉ CONFIGURADO CORRECTAMENTE!
+      - GIT_BRANCH=esp32 # Cambia a 'master' o la rama deseada
+    command: >
+      /bin/bash -c "
+      # --- DEBUG: Imprimir la variable inmediatamente ---
+      echo \"DEBUG: Initial GIT_BRANCH value received by script: [$GIT_BRANCH]\" && \
+      # ------------------------------------------------
+      set -e && \
+      echo '--- Ensuring git is installed ---' && \
+      # Instalar git silenciosamente
+      apt-get update > /dev/null && apt-get install -y git > /dev/null && \
+      REPO_URL='https://github.com/gilo2754/qr_for_vending.git' && \
+      TARGET_DIR='/data' && \
+      # Leer la variable de entorno, usar 'master' si no está definida
+      BRANCH_NAME=\"${GIT_BRANCH:-master}\" && \
+      echo \"--- Target Git Branch: [$BRANCH_NAME] ---\" && \
+      # Salir si BRANCH_NAME está vacía por alguna razón
+      if [ -z \"$BRANCH_NAME\" ]; then \
+        echo 'ERROR: Target branch name is empty. Check GIT_BRANCH environment variable.' && exit 1; \
+      fi && \
+      # Comprobar si el repositorio ya existe
+      if [ -d \"$TARGET_DIR/.git\" ]; then \
+        echo \"--- Repository exists in $TARGET_DIR. Updating branch '$BRANCH_NAME'... ---\" && \
+        cd \"$TARGET_DIR\" && \
+        # Traer cambios remotos
+        git fetch origin && \
+        # Cambiar a la rama deseada (fallará si la rama no existe localmente después de fetch)
+        git checkout \"$BRANCH_NAME\" && \
+        # Asegurar que la rama local coincida exactamente con la remota
+        git reset --hard \"origin/$BRANCH_NAME\" && \
+        # Limpiar archivos no rastreados
+        git clean -fdx && \
+        # Hacer pull (aunque reset --hard ya debería haberla alineado)
+        git pull origin \"$BRANCH_NAME\"; \
+      else \
+        echo \"--- Repository does not exist in $TARGET_DIR. Cloning branch '$BRANCH_NAME'... ---\" && \
+        # Clonar solo la rama específica en el directorio destino
+        git clone --single-branch --branch \"$BRANCH_NAME\" \"$REPO_URL\" \"$TARGET_DIR\"; \
+      fi && \
+      # Ir al subdirectorio correcto y iniciar el servidor
+      if [ -d \"$TARGET_DIR/qr_esp32\" ]; then \
+        echo '--- Starting HTTP server in /data/qr_esp32 directory ---' && \
+        cd \"$TARGET_DIR/qr_esp32\" && \
+        python3 -m http.server 80; \
+      else \
+        echo \"ERROR: Directory '$TARGET_DIR/qr_esp32' not found after git operations!\" && \
+        exit 1; \
+      fi \
+      "
+    restart: unless-stopped
+
+volumes:
+  ota-data:
+    driver: local 
