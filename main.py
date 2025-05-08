@@ -422,6 +422,7 @@ def indicate_reset():
 def main():
     global client, last_health_check
     global MQTT_CLIENT_ID, MQTT_TOPIC_SUB, MQTT_TOPIC_PUB, MQTT_TOPIC_CONFIRM, MQTT_TOPIC_HEALTH # Declare topics as global
+    wdt = None # Initialize wdt variable
 
     # --- Load Configuration --- 
     config = load_config()
@@ -444,6 +445,15 @@ def main():
     # -------------------------------------------------------------
 
     print(f'INFO: Starting *** UPDATED-OTA-REMOTE *** ESP32 Vending MQTT Client for Machine ID: {MACHINE_ID}')
+    
+    # --- Initialize Watchdog Timer ---
+    try:
+        wdt = machine.WDT(timeout=30000)  # 30 seconds timeout
+        wdt.feed()
+        print("INFO: Watchdog Timer initialized (30s timeout).")
+    except Exception as e:
+        print(f"ERROR: Could not initialize Watchdog Timer: {e}")
+    # ---------------------------------
     
     last_health_check = time.time()
     indicate_reset()
@@ -479,6 +489,10 @@ def main():
     # Main loop
     while True:
         try:
+            # Feed the watchdog
+            if wdt:
+                wdt.feed()
+
             # Check for new messages and maintain connection
             # check_msg() returns None for no message, or the message topic for PINGREQ/DISCONNECT? (Check docs)
             # It raises OSError on connection issues.
